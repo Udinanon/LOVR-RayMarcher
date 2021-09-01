@@ -1,4 +1,6 @@
 # ALL WE LEARNED
+## help
+https://app.slack.com/client/T59PJ1KCJ/C59QZ4V6Y
 
 ## ADB
 we use adb, which is actually neat
@@ -18,6 +20,10 @@ If your program contains print statements, you can view them with:
 
 ## LOVR and LODR
 LOVR is the base, LODR give hotswapping, making it possible to almost litteraly code on the fly
+
+## Lua
+lua-users.org/files/wiki_insecure/users/thomasl/luarefv51.pdf
+https://stackoverflow.com/questions/53990332/how-to-get-an-actual-copy-of-a-table-in-lua
 
 
 ## want
