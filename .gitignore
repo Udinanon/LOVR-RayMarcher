@@ -1,5 +1,5 @@
 #custom 
-.json
+*.json
 
 # Compiled Lua sources
 luac.out
