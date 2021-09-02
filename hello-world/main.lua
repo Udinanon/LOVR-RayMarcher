@@ -85,8 +85,10 @@ function lovr.draw()
   for i, cube in ipairs(cubes) do
     cube_color=cube["color"]
     position=cube["pos"]
+---@diagnostic disable-next-line: deprecated
     local r, g, b, a=HSVToRGB(unpack(cube_color))
     lovr.graphics.setColor(r, g, b, a)
+---@diagnostic disable-next-line: deprecated
     lovr.graphics.cube("line", unpack(position))
   end
 end
