@@ -1,4 +1,3 @@
-local cubes = {}
 -- idk what this actually dose, it doesn0t really work
 --[[ function lovr.load()
   models = {
@@ -20,36 +19,48 @@ function shallowcopy(orig)
     end
     return copy
 end
+
 function lovr.load()
   color = {0, 1, 1, 1}
-
-  
+  world = lovr.physics.newWorld()
+  world:setLinearDamping(.01)
+  world:setAngularDamping(.005)
+  world:newBoxCollider(0, 0, 0, 50, .05, 50):setKinematic(true)
+  boxes = {}
+  cubes = {}
 end
 
 function lovr.update(dt)
-  for i, hand in ipairs(lovr.headset.getHands()) do
-    if lovr.headset.wasPressed(hand, 'trigger') then
-      local th_x, th_y = lovr.headset.getAxis('right', 'thumbstick')
-      local x, y, z, angle, ax, ay, az = lovr.headset.getPose(hand)
-      local curr_color = shallowcopy(color)
-      local cube = {["pos"] = {x, y, z, .10, angle, ax, ay, az}, ["color"] = curr_color}
-      color[1] = color[1]+2
-      print(color[1])
-      print(curr_color[1])
-      
-      if th_x >= 0.75 then
-        cube["pos"][4]=.20
-        table.insert(cubes, cube)
-      elseif th_x <= -0.75 then
-        cube["pos"][4]=.05
-        table.insert(cubes, cube)
-      else 
-        table.insert(cubes, cube)
-      end
+  world:update(dt)
 
---        table.insert(cubes, {x, y, z, .10, angle, ax, ay, az})
-    end 
+  if lovr.headset.wasPressed("right", 'trigger') then
+    local th_x, th_y = lovr.headset.getAxis('right', 'thumbstick')
+    local x, y, z, angle, ax, ay, az = lovr.headset.getPose("right")
+    local curr_color = shallowcopy(color)
+    local cube = {["pos"] = {x, y, z, .10, angle, ax, ay, az}, ["color"] = curr_color}
+    color[1] = color[1]+2
+    print(color[1])
+    print(curr_color[1])
+    
+    if th_x >= 0.75 then
+      cube["pos"][4]=.20
+      table.insert(cubes, cube)
+    elseif th_x <= -0.75 then
+      cube["pos"][4]=.05
+      table.insert(cubes, cube)
+    else 
+      table.insert(cubes, cube)
+    end
+  end 
+
+  if lovr.headset.wasPressed("left", "trigger") then
+    local x, y, z = lovr.headset.getPosition("left")
+    local box = world:newBoxCollider(x, y, z, .10)
+    local vx, vy, vz = lovr.headset.getVelocity("left")
+    box:setLinearVelocity(vx, vy, vz)
+    table.insert(boxes, box)
   end
+
   if lovr.headset.wasPressed("left", 'grip') then
       if lovr.headset.wasPressed("right", 'grip') then
         cubes={}
@@ -65,19 +76,18 @@ function lovr.draw()
     lovr.graphics.sphere(position, .01)
     
   end
-  --local color={1, 1, 1, 1}
+
+  for i, box in ipairs(boxes) do
+    local x, y, z = box:getPosition()
+    lovr.graphics.cube('fill', x, y, z, .1, box:getOrientation())
+  end
 
   for i, cube in ipairs(cubes) do
-    --color[1]=color[1]-i*5/255
     cube_color=cube["color"]
     position=cube["pos"]
-
     local r, g, b, a=HSVToRGB(unpack(cube_color))
     lovr.graphics.setColor(r, g, b, a)
-    
     lovr.graphics.cube("line", unpack(position))
-      
-
   end
 end
 

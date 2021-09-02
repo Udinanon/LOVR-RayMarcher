@@ -61,4 +61,4 @@ DeviceButton
 
 - automate sync and grep woth vscode
 
-- button to add vertices of 
+- button to add vertices of sofa and other mobilia
