@@ -13,6 +13,18 @@ connect via usb, give permission adn give adb permission
     connected to 192.168.1.193:5555
 
 and you're wireless!
+
+to udapte the  code use
+
+    adb push --sync <local-path>/. /sdcard/Android/data/org.lovr.app/files
+
+and for LODR
+
+    adb push --sync <local-path>/. /sdcard/Android/data/org.lovr.hotswap/files/.lodr
+
+
+
+
 If your program contains print statements, you can view them with:
 
     adb logcat | grep -i lovr
