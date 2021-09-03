@@ -23,8 +23,6 @@ and for LODR
     adb push --sync <local-path>/. /sdcard/Android/data/org.lovr.hotswap/files/.lodr
 
 
-
-
 If your program contains print statements, you can view them with:
 
     adb logcat | grep -i lovr
@@ -62,3 +60,10 @@ DeviceButton
 - automate sync and grep woth vscode
 
 - button to add vertices of sofa and other mobilia
+
+## Math
+
+Quaternions are cool but i need to wathc some more 3b1b now
+They represent rotations, so they have also an axis of rotation 
+you can also multiply a 3d vector by them and rotate it, if you mmultiply a cooridnate vector you get that vector rotated by that quaternion, or inversly that direction in the coordinate system define by the quaternion. Magic
+

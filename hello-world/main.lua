@@ -68,9 +68,26 @@ function lovr.draw()
   -- draw white spheres for the hands
   for i, hand in ipairs(lovr.headset.getHands()) do
     local position = vec3(lovr.headset.getPosition(hand))
-    local direction = quat(lovr.headset.getOrientation(hand)):direction()
+    local hand_quat = quat(lovr.headset.getOrientation(hand))
+    
     lovr.graphics.setColor(1, 1, 1)
     lovr.graphics.sphere(position, .01)
+
+    lovr.graphics.setColor(1, 0, 0)
+    local x_axis = lovr.math.newVec3(0, 0, -1)
+    x_axis = hand_quat:mul(x_axis)
+    lovr.graphics.line(position, position + x_axis * .05)
+
+    lovr.graphics.setColor(0, 1, 0)
+    local x_axis = lovr.math.newVec3(-1, 0, 0)
+    x_axis = hand_quat:mul(x_axis)
+    lovr.graphics.line(position, position + x_axis * .05)
+
+    lovr.graphics.setColor(0, 0, 1)
+    local x_axis = lovr.math.newVec3(0, -1, 0)
+    x_axis = hand_quat:mul(x_axis)
+    lovr.graphics.line(position, position + x_axis * .05)
+
   end
 
   -- draw the boxes
