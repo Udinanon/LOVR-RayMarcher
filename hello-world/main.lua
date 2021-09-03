@@ -1,5 +1,6 @@
 
 
+
 -- run on boot of the program, where all the setup happes
 function lovr.load()
   -- prepare for the color wheel thing
@@ -13,6 +14,13 @@ function lovr.load()
   -- cubes are the wireframe, boxes the physical ones
   boxes = {}
   cubes = {}
+  --used to track if buttons were pressed
+  State = {["A"] = false, ["B"] = false, ["X"] = false, ["Y"] = false}
+  function State:isNormal ()
+    -- check uf no state is normal
+    return (not State["A"] and not State["B"] and not State["X"] and not State["Y"])
+  end
+
 end
 
 -- runs at each dt interval, where you do input and physics
@@ -21,36 +29,42 @@ function lovr.update(dt)
   world:update(dt)
   -- if right hand trigger is pressed
   if lovr.headset.wasPressed("right", 'trigger') then
-    -- create cube there with color and shift it slightly
-    local th_x, th_y = lovr.headset.getAxis('right', 'thumbstick')
-    local x, y, z, angle, ax, ay, az = lovr.headset.getPose("right")
-    local curr_color = shallowCopy(color)
-    local cube = {["pos"] = {x, y, z, .10, angle, ax, ay, az}, ["color"] = curr_color}
-    color[1] = color[1]+2
-    print(color[1])
-    print(curr_color[1])
-    -- the th_x gives us multiple cube sizes
-    if th_x >= 0.75 then
-      cube["pos"][4]=.20
-      table.insert(cubes, cube)
-    elseif th_x <= -0.75 then
-      cube["pos"][4]=.05
-      table.insert(cubes, cube)
-    else 
-      table.insert(cubes, cube)
+    if State:isNormal() then
+      -- create cube there with color and shift it slightly
+      local th_x, th_y = lovr.headset.getAxis('right', 'thumbstick')
+      local x, y, z, angle, ax, ay, az = lovr.headset.getPose("right")
+      local curr_color = shallowCopy(color)
+      local cube = {["pos"] = {x, y, z, .10, angle, ax, ay, az}, ["color"] = curr_color}
+      color[1] = color[1]+2
+      print(color[1])
+      print(curr_color[1])
+      -- the th_x gives us multiple cube sizes
+      if th_x >= 0.75 then
+        cube["pos"][4]=.20
+        table.insert(cubes, cube)
+      elseif th_x <= -0.75 then
+        cube["pos"][4]=.05
+        table.insert(cubes, cube)
+      else 
+        table.insert(cubes, cube)
+      end
+    elseif State["A"] then
+      
     end
   end 
 
   -- if left trigger is pressed
   if lovr.headset.wasPressed("left", "trigger") then
-    -- generate a physics box there
-    local x, y, z = lovr.headset.getPosition("left")
-    local box = world:newBoxCollider(x, y, z, .10)
-    -- the velocity thing feels weird but tehre is no headset.getAccelleration
-    -- maybe making a custom function but eh
-    local vx, vy, vz = lovr.headset.getVelocity("left")
-    box:setLinearVelocity(vx, vy, vz)
-    table.insert(boxes, box)
+    if State:isNormal() then
+      -- generate a physics box there
+      local x, y, z = lovr.headset.getPosition("left")
+      local box = world:newBoxCollider(x, y, z, .10)
+      -- the velocity thing feels weird but tehre is no headset.getAccelleration
+      -- maybe making a custom function but eh
+      local vx, vy, vz = lovr.headset.getVelocity("left")
+      box:setLinearVelocity(vx, vy, vz)
+      table.insert(boxes, box)
+    end
   end
 
   -- when both grips are pressed, kinda finnicky but ok
@@ -61,6 +75,10 @@ function lovr.update(dt)
         boxes = {}
     end 
   end
+
+  if lovr.headset.wasPressed("right", "a") then
+    State["A"] = not State["A"]
+  end
 end
 
 -- this draws obv
@@ -69,30 +87,49 @@ function lovr.draw()
   for i, hand in ipairs(lovr.headset.getHands()) do
     local position = vec3(lovr.headset.getPosition(hand))
     local hand_quat = quat(lovr.headset.getOrientation(hand))
-    
-    lovr.graphics.setColor(1, 1, 1)
-    lovr.graphics.sphere(position, .01)
+    if State.isNormal() then
+      lovr.graphics.setColor(1, 1, 1)
+      lovr.graphics.sphere(position, .01)
 
-    lovr.graphics.setColor(1, 0, 0)
-    local x_axis = lovr.math.newVec3(0, 0, -1)
-    x_axis = hand_quat:mul(x_axis)
-    lovr.graphics.line(position, position + x_axis * .05)
+      lovr.graphics.setColor(1, 0, 0)
+      local x_axis = lovr.math.newVec3(0, 0, -1)
+      x_axis = hand_quat:mul(x_axis)
+      lovr.graphics.line(position, position + x_axis * .05)
 
-    lovr.graphics.setColor(0, 1, 0)
-    local x_axis = lovr.math.newVec3(-1, 0, 0)
-    x_axis = hand_quat:mul(x_axis)
-    lovr.graphics.line(position, position + x_axis * .05)
+      lovr.graphics.setColor(0, 1, 0)
+      local x_axis = lovr.math.newVec3(-1, 0, 0)
+      x_axis = hand_quat:mul(x_axis)
+      lovr.graphics.line(position, position + x_axis * .05)
 
-    lovr.graphics.setColor(0, 0, 1)
-    local x_axis = lovr.math.newVec3(0, -1, 0)
-    x_axis = hand_quat:mul(x_axis)
-    lovr.graphics.line(position, position + x_axis * .05)
+      lovr.graphics.setColor(0, 0, 1)
+      local x_axis = lovr.math.newVec3(0, -1, 0)
+      x_axis = hand_quat:mul(x_axis)
+      lovr.graphics.line(position, position + x_axis * .05)
+    elseif State["A"] then
+      lovr.graphics.setColor(1, 0, 0)
+      lovr.graphics.sphere(position, .01)
 
+      lovr.graphics.setColor(0, 0, 1)
+      local x_axis = lovr.math.newVec3(0, 0, -1)
+      x_axis = hand_quat:mul(x_axis)
+      lovr.graphics.line(position, position + x_axis * .05)
+
+      lovr.graphics.setColor(0, 0, 1)
+      local x_axis = lovr.math.newVec3(-1, 0, 0)
+      x_axis = hand_quat:mul(x_axis)
+      lovr.graphics.line(position, position + x_axis * .05)
+
+      lovr.graphics.setColor(0, 0, 1)
+      local x_axis = lovr.math.newVec3(0, -1, 0)
+      x_axis = hand_quat:mul(x_axis)
+      lovr.graphics.line(position, position + x_axis * .05)
+    end
   end
 
   -- draw the boxes
   for i, box in ipairs(boxes) do
     local x, y, z = box:getPosition()
+    lovr.graphics.setColor(0.8, 0.8, 0.8)
     lovr.graphics.cube('fill', x, y, z, .1, box:getOrientation())
   end
 
