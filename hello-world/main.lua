@@ -1,3 +1,4 @@
+---@diagnostic disable: deprecated
 
 
 
@@ -10,10 +11,15 @@ function lovr.load()
   world:setLinearDamping(.01)
   world:setAngularDamping(.005)
   -- generate the floor, Kinematic means infinite mass kinda
+  local width, depth = lovr.headset.getBoundsDimensions()
+  print("LODR LOAD")
+  print(width)
+  print(depth)
   world:newBoxCollider(0, 0, 0, 50, .05, 50):setKinematic(true)
   -- cubes are the wireframe, boxes the physical ones
   boxes = {}
   cubes = {}
+  boundaries = {}
   --used to track if buttons were pressed
   State = {["A"] = false, ["B"] = false, ["X"] = false, ["Y"] = false}
   function State:isNormal ()
@@ -28,6 +34,70 @@ function lovr.update(dt)
   -- update physics, like magic
   world:update(dt)
   -- if right hand trigger is pressed
+  if State["A"] then
+    if lovr.headset.wasPressed("right", 'trigger') or lovr.headset.wasPressed("left", "trigger") then
+      local l_pos = vec3(lovr.headset.getPosition("left"))
+      local r_pos = vec3(lovr.headset.getPosition("right"))
+      print("R POS")
+      print(r_pos)
+      local avg_point = r_pos:add(l_pos):div(2) -- get avg point between the two 
+      print("AVG POINT")
+      print(avg_point)
+      local center_y = avg_point[2]/2
+      local box_height = avg_point[2]
+      
+      avg_point = vec2(avg_point[1], avg_point[3]) -- vec2
+      local diff_vec = r_pos:sub(l_pos)
+      local depth_vec = diff_vec:cross(vec3(0, 1, 0)) --- vec3
+      depth_vec = vec2(depth_vec[1], depth_vec[3]) -- vec2
+      -- local box_width = depth_vec:length()
+      depth_vec=depth_vec:normalize()
+
+      local angle = math.atan2(r_pos[1]-l_pos[1], r_pos[3]-l_pos[3])  -- radians
+      --[[print("DEPTH VECTOR")
+      print(depth_vec)
+      local width, height = lovr.headset.getBoundsDimensions() -- x, z vec
+      print("BOUNDS DIMS")
+      print(width, height)
+      print("R POS")
+      print(r_pos)]]
+
+      --[[local true_pos = vec2(r_pos[1]+(width/2), r_pos[3]+(height/2))
+      print("TRUE POS")
+      print(true_pos)
+      local min_component = math.min(true_pos:unpack())
+      local angle = 0
+      if min_component == true_pos[1] then
+        angle = math.atan(true_pos[2]/true_pos[1])
+      else 
+        angle = math.atan(true_pos[1]/true_pos[2])
+      end
+      print("ANGLE")
+      print(angle)
+      local box_depth = min_component/math.cos(angle)
+      print("BOX DEPTH")
+      print(box_depth)
+      local box_x, tmp, box_z = depth_vec:mul(box_depth):unpack() -- unpacked vec3
+      ]]
+      --print("BOX VALUES")
+      --print(box_x, box_y, box_z)
+      local box_depth = 5
+      
+      local box_width = diff_vec:length()
+      local center_x, center_z = avg_point:unpack()--:add(depth_vec:mul(-2.5)):unpack()
+      -- local center_x, center_y, center_z = lovr.headset.getPosition("right")
+      local volume = {["center"]={center_x, center_y, center_z}, 
+                      ["size"]={box_width, box_height, .1},
+                      ["rotation"]=angle}
+      print("VOLUME")
+      print(volume["center"][1], volume["center"][2], volume["center"][3])
+      print(volume["size"][1], volume["size"][2], volume["size"][3])
+      print(volume["rotation"])
+
+      table.insert(boundaries, volume)
+    end
+  end
+
   if lovr.headset.wasPressed("right", 'trigger') then
     if State:isNormal() then
       -- create cube there with color and shift it slightly
@@ -36,8 +106,7 @@ function lovr.update(dt)
       local curr_color = shallowCopy(color)
       local cube = {["pos"] = {x, y, z, .10, angle, ax, ay, az}, ["color"] = curr_color}
       color[1] = color[1]+2
-      print(color[1])
-      print(curr_color[1])
+
       -- the th_x gives us multiple cube sizes
       if th_x >= 0.75 then
         cube["pos"][4]=.20
@@ -67,13 +136,12 @@ function lovr.update(dt)
     end
   end
 
+
   -- when both grips are pressed, kinda finnicky but ok
-  if lovr.headset.wasPressed("left", 'grip') then
-      if lovr.headset.wasPressed("right", 'grip') then
-        -- remove all boxes and cubes
-        cubes = {}
-        boxes = {}
-    end 
+  if lovr.headset.wasPressed("left", 'grip') and lovr.headset.wasPressed("right", 'grip') then
+      -- remove all boxes and cubes
+      cubes = {}
+      boxes = {}
   end
 
   if lovr.headset.wasPressed("right", "a") then
@@ -110,19 +178,21 @@ function lovr.draw()
       lovr.graphics.sphere(position, .01)
 
       lovr.graphics.setColor(0, 0, 1)
-      local x_axis = lovr.math.newVec3(0, 0, -1)
-      x_axis = hand_quat:mul(x_axis)
-      lovr.graphics.line(position, position + x_axis * .05)
-
-      lovr.graphics.setColor(0, 0, 1)
       local x_axis = lovr.math.newVec3(-1, 0, 0)
+      local y_axis = lovr.math.newVec3(0, -1, 0)
+      local z_axis = lovr.math.newVec3(0, 0, -1)
       x_axis = hand_quat:mul(x_axis)
-      lovr.graphics.line(position, position + x_axis * .05)
-
-      lovr.graphics.setColor(0, 0, 1)
-      local x_axis = lovr.math.newVec3(0, -1, 0)
-      x_axis = hand_quat:mul(x_axis)
-      lovr.graphics.line(position, position + x_axis * .05)
+      y_axis = hand_quat:mul(y_axis)
+      z_axis = hand_quat:mul(z_axis)
+      if hand == "hand/right" then
+        lovr.graphics.line(position, position + z_axis * .05)
+        lovr.graphics.line(position, position + x_axis * .05)
+        lovr.graphics.line(position, position + y_axis * .05)
+      elseif hand == "hand/left" then
+        lovr.graphics.line(position, position + z_axis * .05)
+        lovr.graphics.line(position, position - x_axis * .05)
+        lovr.graphics.line(position, position + y_axis * .05)
+      end
     end
   end
 
@@ -135,14 +205,30 @@ function lovr.draw()
 
   -- draw the cubes
   for i, cube in ipairs(cubes) do
-    cube_color=cube["color"]
-    position=cube["pos"]
----@diagnostic disable-next-line: deprecated
+    local cube_color=cube["color"]
+    local position=cube["pos"]
     local r, g, b, a=HSVToRGB(unpack(cube_color))
     lovr.graphics.setColor(r, g, b, a)
----@diagnostic disable-next-line: deprecated
     lovr.graphics.cube("line", unpack(position))
   end
+
+  --print("N BOUNDS")
+  --print(#boundaries)
+  for i, bounds in ipairs(boundaries) do
+    local position=bounds["center"]
+    local size=bounds["size"]
+    local angle=bounds["rotation"]
+    lovr.graphics.setColor(0.7, 0.7, 0.7)
+    lovr.graphics.box("fill", position[1], position[2], position[3], size[1], size[2], size[3])
+  end
+
+  -- local world_pos = world:getPosition()
+  local width, height = lovr.headset.getBoundsDimensions()
+  lovr.graphics.setColor(0.1, 0.1, 0.11)
+  lovr.graphics.box("fill", 0, 0, 0, width, .05, height)
+
+  -- lovr.graphics.line(0, 0, 0, 0, 2, 0)
+
 end
 
 -- utility function for the rainbow thing
