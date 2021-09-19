@@ -67,3 +67,9 @@ Quaternions are cool but i need to wathc some more 3b1b now
 They represent rotations, so they have also an axis of rotation 
 you can also multiply a 3d vector by them and rotate it, if you mmultiply a cooridnate vector you get that vector rotated by that quaternion, or inversly that direction in the coordinate system define by the quaternion. Magic
 
+## Video
+
+i think i need to use Canvas, I can load a single image for a tecture but not videos or gifs.
+maybe i could upload one oer frame. i can load the entire omvie, extract the frames and use those.
+maybei could load them rollig or in blcks to avoid overwhelming the system
+maybe using ffmpeg?
