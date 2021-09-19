@@ -3,6 +3,8 @@
 *.png
 *.md
 *.json
+*.png
+*.jpg
 
 # Compiled Lua sources
 luac.out
