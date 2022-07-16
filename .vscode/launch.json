@@ -8,7 +8,7 @@
             "type": "bash",
             "request": "launch",
             "name": "Send to Oculus",
-            "program": "adb push --sync hello-world/. /sdcard/Android/org.lovr.hotswap/files/.lodr"
+            "program": "adb push --sync Project/. /sdcard/Android/org.lovr.hotswap/files/.lodr"
         }
     ]
 }
