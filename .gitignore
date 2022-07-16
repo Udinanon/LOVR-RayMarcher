@@ -1,9 +1,7 @@
 #custom 
 *.jpg
 *.png
-*.md
-*.png
-*.jpg
+
 
 # Compiled Lua sources
 luac.out
