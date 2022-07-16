@@ -23,11 +23,27 @@ function lovr.load()
   walls = 0
   --used to track if buttons were pressed
   State = {["A"] = false, ["B"] = false, ["X"] = false, ["Y"] = false}
-  function State:isNormal ()
+  function State:isNormal()
     -- check uf no state is normal
     return (not State["A"] and not State["B"] and not State["X"] and not State["Y"])
   end
 
+  shader = lovr.graphics.newShader([[
+
+    out vec3 pos;
+    vec4 position(mat4 projection, mat4 transform, vec4 vertex) {
+      pos = lovrPosition.xyz;
+      return projection * transform * vertex;
+    } ]], 
+    [[
+  in vec3 pos;
+  uniform float time;
+    vec4 color(vec4 graphicsColor, sampler2D image, vec2 uv) {
+      vec2 st = uv;
+      return vec4(abs(pos.x), lovrViewID, abs(pos.y),1.0);
+      
+    }
+  ]])
 end
 
 -- runs at each dt interval, where you do input and physics
@@ -92,6 +108,10 @@ function lovr.update(dt)
       
     end
   end
+
+  if lovr.headset.wasPressed("right", "b") then
+    State["B"] = not State["B"]
+  end
 end
 
 -- this draws obv
@@ -137,6 +157,32 @@ function lovr.draw()
         lovr.graphics.line(position, position + z_axis * .05)
         lovr.graphics.line(position, position - x_axis * .05)
         lovr.graphics.line(position, position + y_axis * .05)
+      end
+    
+    elseif State["B"] then
+      lovr.graphics.setColor(1, 1, 1)
+      lovr.graphics.sphere(position, .01)
+
+      lovr.graphics.setColor(1, 0, 0)
+      local x_axis = lovr.math.newVec3(0, 0, -1)
+      x_axis = hand_quat:mul(x_axis)
+      lovr.graphics.line(position, position + x_axis * .05)
+
+      lovr.graphics.setColor(0, 1, 0)
+      local x_axis = lovr.math.newVec3(-1, 0, 0)
+      x_axis = hand_quat:mul(x_axis)
+      lovr.graphics.line(position, position + x_axis * .05)
+
+      lovr.graphics.setColor(0, 0, 1)
+      local x_axis = lovr.math.newVec3(0, -1, 0)
+      x_axis = hand_quat:mul(x_axis)
+      lovr.graphics.line(position, position + x_axis * .05)
+
+      if hand == "hand/right" then
+        lovr.graphics.setShader(shader)
+        shader:send("time", lovr.timer.getTime())
+        lovr.graphics.plane('fill', position, 1, 1, hand_quat)
+        lovr.graphics.setShader()
       end
     end
   end
