@@ -2,7 +2,6 @@
 *.jpg
 *.png
 *.md
-*.json
 *.png
 *.jpg
 
@@ -47,4 +46,3 @@ luac.out
 *.x86_64
 *.hex
 
-hello-world/LOVR.code-workspace

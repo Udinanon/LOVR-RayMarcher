@@ -1,0 +1,37 @@
+{
+    "Lua.diagnostics.globals": [
+        "lovr",
+        "vec3",
+        "quat",
+        "color",
+        "world",
+        "boxes",
+        "cubes",
+        "boundaries",
+        "vec2",
+        "ground",
+        "screen",
+        "shallowCopy",
+        "deepcopy",
+        "planes",
+        "shader",
+        "canvas",
+        "material",
+        "image",
+        "updateCanvas",
+        "username",
+        "volumes",
+        "floor",
+        "walls",
+        "view_tablet",
+        "tablet",
+        "model",
+        "files",
+        "genTexture"
+    ],
+    "Lua.runtime.version": "LuaJIT",
+    "Lua.workspace.library": [
+        "${3rd}/lovr/library"
+    ],
+    "Lua.workspace.checkThirdParty": false
+}
