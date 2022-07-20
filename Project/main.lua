@@ -29,19 +29,24 @@ function lovr.load()
   end
 
   shader = lovr.graphics.newShader([[
-
     out vec3 pos;
     vec4 position(mat4 projection, mat4 transform, vec4 vertex) {
-      pos = lovrPosition.xyz;
+      //pos = lovrPosition.xyz; // gives poisiton relative to object cener in m, not relative to model size
+      //pos = vertex.xyz; // apparenylt identical to lovrPosition
+      pos = vec3(lovrModel * vertex); //gives 3d world position
       return projection * transform * vertex;
     } ]], 
     [[
   in vec3 pos;
   uniform float time;
     vec4 color(vec4 graphicsColor, sampler2D image, vec2 uv) {
-      vec2 st = uv;
-      return vec4(abs(pos.x), lovrViewID, abs(pos.y),1.0);
+      //vec3 zeroed_pos = (pos+1.)/2.; 
+      //vec3 zeroed_pos = (pos+0.5); // normalizes verterx coords as they are [-0.5 0.5]
+      vec3 newPos = vec3(ceil(sin(10.*pos)-0.707)); // helps visualize coords thta can go beyong [0.0 1.0]
       
+      //return vec4(uv.x, uv.y, 0.0, 1.0);
+      //return vec4(pos.x, pos.y, pos.z,1.0);
+      return vec4(newPos.x, newPos.y, newPos.z,1.0);
     }
   ]])
 end
