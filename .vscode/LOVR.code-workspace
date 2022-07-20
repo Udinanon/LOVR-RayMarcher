@@ -4,5 +4,9 @@
 			"path": ".."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"Lua.workspace.library": [
+			"/home/udinanon/Lua/LOVR/API Docs/lovr-docs-master/api"
+		]
+	}
 }
