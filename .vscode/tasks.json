@@ -1,0 +1,31 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Check ADB",
+            "type": "shell",
+            "command": "adb devices -l",
+            "problemMatcher": []
+        },
+        {
+            "label": "Connect Wifi ADB@Home",
+            "type": "shell",
+            "command": "adb tcpip 5555; adb connect 192.168.1.193:5555",
+            "problemMatcher": []
+        },
+        {
+            "label": "test",
+            "type": "shell",
+            "command": "echo ${fileDirname}",
+            "problemMatcher": []
+        },
+        {
+            "label": "Send Project folder",
+            "type": "shell",
+            "command": "adb push --sync ${workspaceFolder}/Project/. /sdcard/Android/data/org.lovr.hotswap/files/.lodr",
+            "problemMatcher": []
+        }
+    ]
+}
