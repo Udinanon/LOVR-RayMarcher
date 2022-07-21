@@ -16,16 +16,21 @@
             "problemMatcher": []
         },
         {
-            "label": "test",
+            "label": "ADB Screenshot",
             "type": "shell",
-            "command": "echo ${fileDirname}",
+            "command": "adb exec-out screencap -p > Screenshots/screen_$(date +'%Y-%m-%d-%X').png",
             "problemMatcher": []
         },
         {
-            "label": "Send Project folder",
+            "label": " ADB Send Project folder",
             "type": "shell",
             "command": "adb push --sync ${workspaceFolder}/Project/. /sdcard/Android/data/org.lovr.hotswap/files/.lodr",
-            "problemMatcher": []
+            "problemMatcher": [],
+            "options": {
+                "statusbar": {
+                    "label": "Sync ./Project/"
+                }
+            }
         }
     ]
 }
