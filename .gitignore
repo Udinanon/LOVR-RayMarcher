@@ -3,7 +3,7 @@
 *.png
 *.db
 /API Docs/
-
+*.stl
 # Compiled Lua sources
 luac.out
 

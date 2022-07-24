@@ -141,8 +141,102 @@ local points = lovr.headset.getBoundsGeometry() returns an ungodly number of poi
 
 the standard shader admits only onem light source
 
+## Shaders
+Shaders are  compex topic, funadmental for 3D rendering, but can be sued also for parallel high performance comuptations and for basic texturing
 
-## rotations
+THe system uses a `shader = lovr.graphics.newShader([[]],[[]])` funxtion that reads raw GLSL and compiles a shader
+this can then be loaded by `lovr.graphics.setShader(shader)`
+Theis sader will dictate using the Verted and Fragment shaders the properties and color fo pixels rendered using this shader
+
+all shaders can access `uniform <type> <name>` values, given by LOVR with `shader:send(<name>, <value>)`
+
+shaders can also use ShaderBlocks to pass back and forthh more types of data, including arrays 
+the code here is more complex, so make reference to https://lovr.org/docs/v0.15.0/lovr.graphics.newShaderBlock and https://lovr.org/docs/v0.15.0/ShaderBlock
+a doubt is the vact that vec3 seems to need to be unpacked, but mat4 seem to be easily passed along
+
+The shader can also be used on the entire eye image by more complex usage of canvases
+
+### Vertex
+this shader computes the 3d geometrical properties of the model, having access to parameters such as vertex position, transform matrices for the view camera, the projection matrix and more
+
+the default is 
+``` lua
+    vec4 position(mat4 projection, mat4 transform, vec4 vertex) {
+    return vertex;
+    }
+```
+
+values can be exfiltrated to the Fragment shader by declating a `out <type> <name>` variable and defining them in the shader code
+
+some of the available values are 
+```lua 
+in vec3 lovrPosition; // The vertex position in meters, relative to the model itself
+in vec3 lovrNormal; // The vertex normal vector
+in vec2 lovrTexCoord;
+in vec4 lovrVertexColor;
+in vec3 lovrTangent;
+in uvec4 lovrBones;
+in vec4 lovrBoneWeights;
+in uint lovrDrawID;
+out vec4 lovrGraphicsColor;
+uniform mat4 lovrModel; // 4x4 matrix with model world coords and rotation
+uniform mat4 lovrView;
+uniform mat4 lovrProjection;
+uniform mat4 lovrTransform; // Model-View matrix
+uniform mat3 lovrNormalMatrix; // Inverse-transpose of lovrModel
+uniform mat3 lovrMaterialTransform;
+uniform float lovrPointSize;
+uniform mat4 lovrPose[48];
+uniform int lovrViewportCount;
+uniform int lovrViewID;
+const mat4 lovrPoseMatrix; // Bone-weighted pose
+const int lovrInstanceID; // Current instance ID
+```
+
+we also have the default function inputs of `mat4 projection, mat4 transform, vec4 vertex`
+
+we can extract the vertex world position with 
+```lua
+pos = vec3(lovrModel * vertex); //gives 3d world position
+```
+
+### Fragment
+The fragment shader renders the pixel itself, getting the input from the Geometry Shader and computing from that, tetxures, diffuse and emissive texttures, and other factors the color of the pixel
+
+this is gthe default fragment shader
+```lua
+vec4 color(vec4 graphicsColor, sampler2D image, vec2 uv) {
+  return graphicsColor * lovrDiffuseColor * lovrVertexColor * texture(image, uv);
+}
+```
+with `uv` being the 2D coords of gthe face being rendered, normlaized in a [0.0 1.0] range
+
+the standard header is 
+```lua
+in vec2 lovrTexCoord;
+in vec4 lovrVertexColor;
+in vec4 lovrGraphicsColor;
+out vec4 lovrCanvas[gl_MaxDrawBuffers];
+uniform float lovrMetalness;
+uniform float lovrRoughness;
+uniform vec4 lovrDiffuseColor;
+uniform vec4 lovrEmissiveColor;
+uniform sampler2D lovrDiffuseTexture;
+uniform sampler2D lovrEmissiveTexture;
+uniform sampler2D lovrMetalnessTexture;
+uniform sampler2D lovrRoughnessTexture;
+uniform sampler2D lovrOcclusionTexture;
+uniform sampler2D lovrNormalTexture;
+uniform samplerCube lovrEnvironmentTexture;
+uniform int lovrViewportCount;
+uniform int lovrViewID;
+```
+
+we can access shared values from the Vertex Shader with `in <type> <name>`
+
+
+
+## Rotations
 planes have defalt normal towards 0, 0, 1
 idea 1: get direction between head and left hand and sue that for the center, easy to aim and to adjust, always normal to vision field
 how the fuck do unpack work
@@ -218,4 +312,5 @@ pprint(posts["posts"][0])
 ## Simple ideas
 simple graph visual in 3d
 ping pong ball and racket
-some experiemtns with shaders
+
+
