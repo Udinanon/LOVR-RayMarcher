@@ -12,25 +12,31 @@
         {
             "label": "Connect Wifi ADB@Home",
             "type": "shell",
-            "command": "adb tcpip 5555; adb connect 192.168.1.193:5555",
+            "command": "adb tcpip 5555; wait; adb connect 192.168.1.193:5555",
             "problemMatcher": []
         },
         {
             "label": "ADB Screenshot",
             "type": "shell",
             "command": "adb exec-out screencap -p > Screenshots/screen_$(date +'%Y-%m-%d-%X').png",
+            "problemMatcher":[]},
+        {
+            "label": "Open LODR",
+            "type": "shell",
+            "command": "adb shell monkey -p  org.lovr.hotswap 1",
             "problemMatcher": []
         },
         {
             "label": " ADB Send Project folder",
             "type": "shell",
             "command": "adb push --sync ${workspaceFolder}/Project/. /sdcard/Android/data/org.lovr.hotswap/files/.lodr",
-            "problemMatcher": [],
-            "options": {
-                "statusbar": {
-                    "label": "Sync ./Project/"
-                }
-            }
+            "problemMatcher": []
+        }, 
+        {
+            "label": "Stream screen (delay)",
+            "type": "shell",
+            "command": "adb exec-out screenrecord --output-format=h264 - |    ffplay -framerate 24 -probesize 32 -sync video  -",
+            "problemMatcher":[]
         }
     ]
 }
