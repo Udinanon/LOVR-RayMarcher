@@ -19,6 +19,18 @@ function lovr.load()
     return (not State["A"] and not State["B"] and not State["X"] and not State["Y"])
   end
 
+  block = lovr.graphics.newShaderBlock('uniform', {
+    lightPos = { 'vec4', 2 }
+  }, { usage = 'static' })
+  light_pos = vec3(0.0, 1.0, 0.0)
+  local positions = {}
+  positions[1] = {1.0, light_pos:unpack()}
+  positions[2] = {1.0, 1.0, 5.0, 1.0}
+  --for i = 3, 10 do
+    --positions[i] = lovr.math.vec4(0.0)
+  --end
+  block:send("lightPos", positions)
+
   shader = lovr.graphics.newShader([[
     out vec3 FragmentPos;
     out vec3 Normal;
@@ -29,11 +41,9 @@ function lovr.load()
         FragmentPos = vec3(lovrModel * vertex); // global vertex position
         return projection * transform * vertex; 
     }
-  ]], 
-    [[
+  ]],block:getShaderCode("lightBlock") .. [[
     uniform vec4 ambience;  
     uniform vec4 lightColor;
-    uniform vec3 lightPos;
 
     in vec3 Normal;
     in vec3 FragmentPos;
@@ -42,16 +52,24 @@ function lovr.load()
     {    
         //diffuse
         vec3 norm = normalize(Normal);
-        vec3 lightDir = normalize(lightPos - FragmentPos); // unit vector of vertex-light  
-        float diff = max(dot(norm, lightDir), 0.0); // represent how exposes the fragment is
-        vec4 diffuse = diff * lightColor; //apply to color
-                        
+        vec4 diffuse = vec4(0.0);
+        for( int i = 0; i < lightPos.length(); i++){
+          if (lightPos[i][0] > 0.){
+            vec3 pos = lightPos[i].yzw;  
+            vec3 lightDir = normalize(pos - FragmentPos); // unit vector of vertex-light  
+            float diff = max(dot(norm, lightDir), 0.0); // represent how exposes the fragment is
+            diffuse += diff * lightColor; //apply to color
+          }
+        }
         vec4 baseColor = graphicsColor * texture(image, uv); // get potential texture            
         return baseColor * (ambience + diffuse); //apply ligth and ambiance
     }
-  ]])
+  ]] )
   shader:send('ambience', { 0.01, 0.0, 0.01, 1.0 })
-    
+  --light_table = { {1.0, 1.0, 1.0, 1.}, {1.0, 1.0, 5.0, 1.0} }
+  --shader:send("lightPos", light_table)
+  
+  shader:sendBlock("lightBlock", block)
   shader:send("lightColor", {0.2, 0.2, 0.2, })
 end
 
