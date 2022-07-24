@@ -43,12 +43,24 @@ or even bettter
     
     adb logcat -s LOVR
 
-### More commands
-
 to list all files in folder use
     adb shell ls <folder>
 like
     adb shell ls /sdcard/Android/data/org.lovr.hotswap/files/.lodr
+
+to get a remote screenshot we can use
+    adb exec-out screencap -p > Screenshots/screen_$(date +'%Y-%m-%d-%X').png
+
+
+From here
+https://android.stackexchange.com/questions/7686/is-there-a-way-to-see-the-devices-screen-live-on-pc-through-adb/154328#154328
+we get a ADB command to get a fluid, although delayed, video stream
+    adb exec-out screenrecord --output-format=h264 - |   ffplay -framerate 60 -probesize 32 -sync video  -
+
+
+we can launch any app via adb, with
+    adb shell monkey -p  <Package name> 1
+with LODR being `org.lovr.hotswap`
 
 ## Controller
 
@@ -91,6 +103,8 @@ DeviceButton
 Quaternions are cool but i need to wathc some more 3b1b now
 They represent rotations, so they have also an axis of rotation 
 you can also multiply a 3d vector by them and rotate it, if you mmultiply a cooridnate vector you get that vector rotated by that quaternion, or inversly that direction in the coordinate system define by the quaternion. Magic
+
+mat4 for rototranslations are "column-major 4x4 homogeneous transformation matrices"
 
 ## Theater
  

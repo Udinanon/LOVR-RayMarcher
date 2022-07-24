@@ -2,6 +2,7 @@
     "recommendations": [
         "actboy168.lua-debug",
         "sumneko.lua",
-        "keyring.Lua"
+        "keyring.lua",
+        "actboy168.tasks"
     ]
 }
