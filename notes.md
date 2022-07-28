@@ -150,6 +150,10 @@ Theis sader will dictate using the Verted and Fragment shaders the properties an
 
 all shaders can access `uniform <type> <name>` values, given by LOVR with `shader:send(<name>, <value>)`
 
+shaders can also use ShaderBlocks to pass back and forthh more types of data, including arrays 
+the code here is more complex, so make reference to https://lovr.org/docs/v0.15.0/lovr.graphics.newShaderBlock and https://lovr.org/docs/v0.15.0/ShaderBlock
+a doubt is the vact that vec3 seems to need to be unpacked, but mat4 seem to be easily passed along
+
 The shader can also be used on the entire eye image by more complex usage of canvases
 
 ### Vertex

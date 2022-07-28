@@ -27,11 +27,17 @@
             "problemMatcher": []
         },
         {
-            "label": " ADB Send Project folder",
+            "label": " ADB Send Project",
             "type": "shell",
-            "command": "adb push --sync ${workspaceFolder}/Project/. /sdcard/Android/data/org.lovr.hotswap/files/.lodr",
+            "command": "adb push --sync ${workspaceFolder}/Project/. /sdcard/Android/data/org.lovr.hotswap/files/.lodr;",
             "problemMatcher": []
         }, 
+        {
+            "label": " ADB Debug Send Project",
+            "type": "shell",
+            "command": "adb push --sync ${workspaceFolder}/Project/. /sdcard/Android/data/org.lovr.hotswap/files/.lodr; wait; adb logcat -s LOVR",
+            "problemMatcher": []
+        },
         {
             "label": "Stream screen (delay)",
             "type": "shell",
