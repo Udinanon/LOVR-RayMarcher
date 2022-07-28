@@ -32,44 +32,31 @@ function lovr.load()
   block:send("lightPos", positions)
 
   shader = lovr.graphics.newShader([[
-    out vec3 FragmentPos;
-    out vec3 Normal;
-
-    vec4 position(mat4 projection, mat4 transform, vec4 vertex) 
-    { 
-        Normal = lovrNormalMatrix * lovrNormal; // normal vector corrected for global model position
-        FragmentPos = vec3(lovrModel * vertex); // global vertex position
-        return projection * transform * vertex; 
+    out vec3 pos;
+    vec4 position(mat4 projection, mat4 transform, vec4 vertex) {
+      //pos = lovrPosition.xyz; // gives poisiton relative to object cener in m, not relative to model size
+      //pos = vertex.xyz; // apparenylt identical to lovrPosition
+      pos = vec3(lovrModel * vertex); //gives 3d world position
+      return projection * transform * vertex;
+    } ]],
+    [[
+  in vec3 pos;
+  uniform float time;
+    vec4 color(vec4 graphicsColor, sampler2D image, vec2 uv) {
+      //vec3 zeroed_pos = (pos+1.)/2.; 
+      //vec3 zeroed_pos = (pos+0.5); // normalizes verterx coords as they are [-0.5 0.5]
+      vec3 newPos = vec3(ceil(sin(50.*pos)-0.707)); // helps visualize coords thta can go beyong [0.0 1.0]
+      
+      //return vec4(uv.x, uv.y, 0.0, 1.0);
+      //return vec4(pos.x, pos.y, pos.z,1.0);
+      return vec4(newPos.x, newPos.y, newPos.z,1.0);
     }
-  ]],block:getShaderCode("lightBlock") .. [[
-    uniform vec4 ambience;  
-    uniform vec4 lightColor;
-
-    in vec3 Normal;
-    in vec3 FragmentPos;
-    
-    vec4 color(vec4 graphicsColor, sampler2D image, vec2 uv) 
-    {    
-        //diffuse
-        vec3 norm = normalize(Normal);
-        vec4 diffuse = vec4(0.0);
-        for( int i = 0; i < lightPos.length(); i++){
-          if (lightPos[i][0] > 0.){
-            vec3 pos = lightPos[i].yzw;  
-            vec3 lightDir = normalize(pos - FragmentPos); // unit vector of vertex-light  
-            float diff = max(dot(norm, lightDir), 0.0); // represent how exposes the fragment is
-            diffuse += diff * lightColor; //apply to color
-          }
-        }
-        vec4 baseColor = graphicsColor * texture(image, uv); // get potential texture            
-        return baseColor * (ambience + diffuse); //apply ligth and ambiance
-    }
-  ]] )
+  ]])
   shader:send('ambience', { 0.01, 0.0, 0.01, 1.0 })
   --light_table = { {1.0, 1.0, 1.0, 1.}, {1.0, 1.0, 5.0, 1.0} }
   --shader:send("lightPos", light_table)
   
-  shader:sendBlock("lightBlock", block)
+  --shader:sendBlock("lightBlock", block)
   shader:send("lightColor", {0.2, 0.2, 0.2, })
 end
 
@@ -141,7 +128,7 @@ function lovr.draw()
         lovr.graphics.setColor(1, 1, 1)
         lovr.graphics.setShader(shader)
         --shader:send("lightPos", { 0.0, 1.0, 0.0 })
-        lovr.graphics.sphere( position, 0.1, hand_quat)
+        lovr.graphics.cube("fill", position, 0.2, hand_quat)
         lovr.graphics.setShader()
       end
     end
