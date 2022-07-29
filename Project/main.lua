@@ -22,11 +22,13 @@ function lovr.load()
 
   shader = lovr.graphics.newShader(lovr.filesystem.read("shader.vert"),lovr.filesystem.read("shader.frag"))
   shader:send('viewPos', { 0, 0, 0 })
+  shader:send("time", 0.0)
 end
 
 -- runs at each dt interval, where you do input and physics
 function lovr.update(dt)
   shader:send('viewPos', {lovr.headset.getPosition("head")})
+  shader:send("time", lovr.timer.getTime())
   -- update physics, like magic
   world:update(dt)
   if walls == 0 then
