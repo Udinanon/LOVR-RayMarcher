@@ -19,43 +19,14 @@ function lovr.load()
     return (not State["A"] and not State["B"] and not State["X"] and not State["Y"])
   end
 
-  block = lovr.graphics.newShaderBlock('uniform', {
-    lightPos = { 'vec4', 2 }
-  }, { usage = 'static' })
-  light_pos = vec3(0.0, 1.0, 0.0)
-  local positions = {}
-  positions[1] = {1.0, light_pos:unpack()}
-  positions[2] = {1.0, 1.0, 5.0, 1.0}
-  --for i = 3, 10 do
-    --positions[i] = lovr.math.vec4(0.0)
-  --end
-  block:send("lightPos", positions)
 
-  shader = lovr.graphics.newShader([[
-    out vec3 pos;
-    vec4 position(mat4 projection, mat4 transform, vec4 vertex) {
-      //pos = lovrPosition.xyz; // gives poisiton relative to object cener in m, not relative to model size
-      //pos = vertex.xyz; // apparenylt identical to lovrPosition
-      pos = vec3(lovrModel * vertex); //gives 3d world position
-      return projection * transform * vertex;
-    } ]],
-    [[
-  in vec3 pos;
-  uniform float time;
-    vec4 color(vec4 graphicsColor, sampler2D image, vec2 uv) {
-      //vec3 newPos = vec3(ceil(sin(50.*pos)-0.707)); // helps visualize coords thta can go beyong [0.0 1.0]
-      float depth1 = pow(distance(pos, viewPos), 4.);
-      float depth2 = pow(distance(pos, viewPos), 4.5);
-      float depth3 = pow(distance(pos, viewPos), 5.);
-
-      return vec4(depth1, depth2, depth3, 1.0);
-    }
-  ]])
-    shader:send('viewPos', { 0, 0, 0 })
+  shader = lovr.graphics.newShader(lovr.filesystem.read("shader.vert"),lovr.filesystem.read("shader.frag"))
+  shader:send('viewPos', { 0, 0, 0 })
 end
 
 -- runs at each dt interval, where you do input and physics
 function lovr.update(dt)
+  shader:send('viewPos', {lovr.headset.getPosition("head")})
   -- update physics, like magic
   world:update(dt)
   if walls == 0 then
