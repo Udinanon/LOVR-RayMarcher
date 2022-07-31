@@ -152,15 +152,18 @@ all shaders can access `uniform <type> <name>` values, given by LOVR with `shade
 
 shaders can also use ShaderBlocks to pass back and forthh more types of data, including arrays 
 the code here is more complex, so make reference to https://lovr.org/docs/v0.15.0/lovr.graphics.newShaderBlock and https://lovr.org/docs/v0.15.0/ShaderBlock
-a doubt is the vact that vec3 seems to need to be unpacked, but mat4 seem to be easily passed along
+Acooridng to the Devs, Mat4 and Vec3 are different to other datatypes and so some need to be unpacked and some don't
 
 The shader can also be used on the entire eye image by more complex usage of canvases
+
+Shaders can (and probably should) be loaded from files
+
 
 ### Vertex
 this shader computes the 3d geometrical properties of the model, having access to parameters such as vertex position, transform matrices for the view camera, the projection matrix and more
 
 the default is 
-``` lua
+``` glsl
     vec4 position(mat4 projection, mat4 transform, vec4 vertex) {
     return vertex;
     }
@@ -169,7 +172,7 @@ the default is
 values can be exfiltrated to the Fragment shader by declating a `out <type> <name>` variable and defining them in the shader code
 
 some of the available values are 
-```lua 
+```glsl 
 in vec3 lovrPosition; // The vertex position in meters, relative to the model itself
 in vec3 lovrNormal; // The vertex normal vector
 in vec2 lovrTexCoord;
@@ -196,7 +199,7 @@ const int lovrInstanceID; // Current instance ID
 we also have the default function inputs of `mat4 projection, mat4 transform, vec4 vertex`
 
 we can extract the vertex world position with 
-```lua
+```glsl
 pos = vec3(lovrModel * vertex); //gives 3d world position
 ```
 
@@ -212,7 +215,7 @@ vec4 color(vec4 graphicsColor, sampler2D image, vec2 uv) {
 with `uv` being the 2D coords of gthe face being rendered, normlaized in a [0.0 1.0] range
 
 the standard header is 
-```lua
+```glsl
 in vec2 lovrTexCoord;
 in vec4 lovrVertexColor;
 in vec4 lovrGraphicsColor;
@@ -234,6 +237,46 @@ uniform int lovrViewID;
 
 we can access shared values from the Vertex Shader with `in <type> <name>`
 
+
+### 3D Shaders
+So shaders that fully cover the rendering process, not passing by the normal lover.graphincs code but do the entire work themselves
+
+To achieve this we need the shader to fully cover the user UI and eyes.
+This is acheived by:
+1. define a vertex shader with `return vertex` so that n geometry transofmration is applied
+2. render the scene in the fragment shader, passing info from the vertex if needed
+3. in lovr, activate the shader 
+4. run `lovr.graphics.fill()` 
+5. remove the shader
+
+We probably also want the exact diection and position of the pixels we'll be filling in, for that:
+``` glsl
+out vec3 pos;
+out vec3 dir;
+vec4 position(mat4 projection, mat4 transform, vec4 vertex) {
+  vec4 ray = vec4(lovrTexCoord * 2. - 1., -1., 1.);
+  pos = -lovrView[3].xyz * mat3(lovrView);
+  dir = transpose(mat3(lovrView)) * (inverse(lovrProjection) * ray).xyz;
+  return vertex;
+}
+```
+passes bith values to the fragment shader from the vertex one 
+source: https://ifyouwannabemylovr.slack.com/archives/C59QZ4V6Y/p1659160201503029
+
+This allows us to do custom rendering techniques like 
+
+#### Ray Marching 
+A rendering technique that's marches from the pixels backwards inside the scene.
+useful for some effects seen in some videos like 
+https://www.youtube.com/watch?v=PGtv-dBi2wE
+https://www.youtube.com/watch?v=Cp5WWtMoeKg
+https://www.youtube.com/watch?v=svLzmFuSBhk
+https://www.youtube.com/watch?v=SdNb7-I1TtA
+
+These include 3D fractals and some other cool stuff
+
+The core point is ray marching algorithms that take the geometry and march the rays inside it, whcih is done in the fragment shader 
+some codes for simole geometres can be found at https://www.shadertoy.com/view/wdf3zl
 
 
 ## Rotations
