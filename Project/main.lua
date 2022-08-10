@@ -21,7 +21,15 @@ function lovr.load()
 
 
   shader = lovr.graphics.newShader(lovr.filesystem.read("shader.vert"),lovr.filesystem.read("shader.frag"))
-  shader:send('viewPos', { 0, 0, 0 })
+  flight = {
+    viewOffset = lovr.math.newVec3(0, 0, 0),
+    thumbstickDeadzone = 0.3,
+    speed = 1
+  }
+  shader:send('viewOffset', {flight.viewOffset:unpack()})
+  scale = 1.
+  max_scale = 32
+  shader:send("scale", scale)
   shader:send("time", 0.0)
 end
 
@@ -44,20 +52,25 @@ function lovr.update(dt)
       world:newBoxCollider(0, 2, -depth/2, width, 4, 0.1):setKinematic(true)
       walls = 1
   end
-
-  if State:isNormal() then
-    if lovr.headset.wasPressed("right", 'trigger') then
- 
-
-    end 
-
-    -- if left trigger is pressed
-    if lovr.headset.wasPressed("left", "trigger") then
+  if State["B"] then
+    local x, y = lovr.headset.getAxis('right', 'thumbstick')
+    local direction = quat(lovr.headset.getOrientation("head")):direction()
+    if math.abs(x) > flight.thumbstickDeadzone then
+      local strafeVector = quat(-math.pi / 2, 0, 1, 0):mul(vec3(direction))
+      flight.viewOffset:add(strafeVector * x * flight.speed * dt)
     end
+    if math.abs(y) > flight.thumbstickDeadzone then
+      flight.viewOffset:add(direction * y * flight.speed * dt)
+    end
+    shader:send('viewOffset', {flight.viewOffset:unpack()})
   end
- 
   if lovr.headset.wasPressed("right", "a") then
     State["A"] = not State["A"]
+    scale = scale * 2 
+    if scale > max_scale then
+      scale = 1
+    end
+    shader:send("scale", scale)
   end
   if lovr.headset.wasPressed("right", "b") then
     State["B"] = not State["B"]
@@ -88,10 +101,6 @@ function lovr.draw()
       lovr.graphics.sphere(position, .01)
 
 
-    elseif State["A"] then
-      lovr.graphics.setColor(1, 0, 0)
-      lovr.graphics.sphere(position, .01)
-        
     elseif State["B"] then
       lovr.graphics.setColor(1, 1, 1)
       lovr.graphics.sphere(position, .01)
