@@ -31,6 +31,10 @@ function lovr.load()
   max_scale = 32
   shader:send("scale", scale)
   shader:send("time", 0.0)
+
+  palette = lovr.graphics.newTexture("./Assets/Palette1.png")
+  shader:send("palette", palette)
+  State["B"] = true
 end
 
 -- runs at each dt interval, where you do input and physics
