@@ -4,6 +4,13 @@
 *.db
 /API Docs/
 *.stl
+/Engine/
+/Project/Assets/
+/Screens/
+*.log
+*.mkv
+*.gif
+
 # Compiled Lua sources
 luac.out
 
