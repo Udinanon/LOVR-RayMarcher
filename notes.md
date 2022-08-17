@@ -1,21 +1,22 @@
 # ALL WE LEARNED
 ## Links
-LOVR
+### LOVR
 https://lovr.org/docs/Getting_Started
 https://github.com/bjornbytes/lovr
-https://twitter.com/bjornbytes
 https://app.slack.com/client/T59PJ1KCJ/C59QZ4V6Y
-ADB
-https://www.automatetheplanet.com/wp-content/uploads/2019/08/Cheat_sheet_ADB.pdf
-
-
 
 ## ADB
-we use adb, which is actually neat
+info can be found at 
+
+https://developer.android.com/studio/command-line/adb
+https://www.automatetheplanet.com/wp-content/uploads/2019/08/Cheat_sheet_ADB.pdf
+https://developer.oculus.com/documentation/native/android/ts-adb/
 
 use 
+
     adb devices -l 
 to identify all connected devices
+
 
 connect via usb, give permission adn give adb permission
 
@@ -26,7 +27,7 @@ connect via usb, give permission adn give adb permission
 
 and you're wireless!
 
-to udapte the  code use
+to update the code use
 
     adb push --sync <local-path>/. /sdcard/Android/data/org.lovr.app/files
 
@@ -39,28 +40,66 @@ If your program contains print statements, you can view them with:
 
     adb logcat | grep -i lovr
 
-or even bettter 
+or even better 
     
     adb logcat -s LOVR
 
 to list all files in folder use
+
     adb shell ls <folder>
 like
+
     adb shell ls /sdcard/Android/data/org.lovr.hotswap/files/.lodr
 
+
 to get a remote screenshot we can use
+
     adb exec-out screencap -p > Screenshots/screen_$(date +'%Y-%m-%d-%X').png
 
 
 From here
 https://android.stackexchange.com/questions/7686/is-there-a-way-to-see-the-devices-screen-live-on-pc-through-adb/154328#154328
 we get a ADB command to get a fluid, although delayed, video stream
+
     adb exec-out screenrecord --output-format=h264 - |   ffplay -framerate 60 -probesize 32 -sync video  -
 
 
 we can launch any app via adb, with
+
     adb shell monkey -p  <Package name> 1
 with LODR being `org.lovr.hotswap`
+
+
+### Performance 
+we can access the VrApi via ADB using 
+
+    adb logcat -s VrApi
+which we can use to read various datapoints onthe state of the device
+
+https://developer.oculus.com/documentation/native/android/po-per-frame-gpu/
+https://developer.oculus.com/documentation/native/android/ts-logcat-stats/
+
+
+We can also read GPU performance deatils using
+
+    adb shell ovrgpuprofiler -m
+
+https://developer.oculus.com/documentation/native/android/ts-ovrgpuprofiler/
+
+
+performance profiling might want to keep in mind that the CPU and GPU of Ocuulus devices dynamically handle the workload
+https://developer.oculus.com/documentation/native/android/mobile-power-overview/
+
+
+OVRMetrics is also a powerful tool to access realtime perfromance information while inside the device, using an overlay or reporting results to CSV
+It can be accessed via the Unknown Resources panel or via some ADB commands 
+
+https://developer.oculus.com/documentation/native/android/ts-ovrmetricstool/
+https://developer.oculus.com/documentation/native/android/ts-ovr-best-practices/
+
+
+There are even more methods and tols to track real time performance
+https://developer.oculus.com/documentation/native/android/po-book-performance/
 
 ## Controller
 
@@ -74,57 +113,13 @@ lua-users.org/files/wiki_insecure/users/thomasl/luarefv51.pdf
 https://stackoverflow.com/questions/53990332/how-to-get-an-actual-copy-of-a-table-in-lua
 
 
-## want
-- i want a class/functipojn that gives me all pressed buttons and joystick positions
-can0t find anything specific un the docs
-
-DeviceButton 
-
-    Buttons on an input device.
-    Value	Description
-    trigger	The trigger button.
-    thumbstick	The thumbstick.
-    touchpad	The touchpad.
-    grip	The grip button.
-    menu	The menu button.
-    a	The A button.
-    b	The B button.
-    x	The X button.
-    y	The Y button.
-    proximity	The proximity sensor on a headset.
-
-
-- automate sync and grep woth vscode
-
-- button to add vertices of sofa and other mobilia
 
 ## Math
 
-Quaternions are cool but i need to wathc some more 3b1b now
 They represent rotations, so they have also an axis of rotation 
-you can also multiply a 3d vector by them and rotate it, if you mmultiply a cooridnate vector you get that vector rotated by that quaternion, or inversly that direction in the coordinate system define by the quaternion. Magic
+you can also multiply a 3d vector by them and rotate it, if you multiply a coordinate vector you get that vector rotated by that quaternion, or inversly that direction in the coordinate system define by the quaternion.
 
 mat4 for rototranslations are "column-major 4x4 homogeneous transformation matrices"
-
-## Theater
- 
-### 2D Images
-planes are much comfier than boxes and don't need cubemaps
-Canvases can render 3d things in a different place, project them onside the canvas and display as a  texture. Neat
-using graphics.fill we can also just push a Image inside. this image is streched
-we use a blank Image, paste our content, fill the canvas woith it and use that maybe
-
-I want to then test some basics in moving the box around, maybe the pointer library could be useful
-netflix screeen is pretty easy and good, but i wnat to project this on the vo correctly i think
-
-perhaps more interesting content would help us
-### moar
-next is loading images from interesting sources
-
-then we could test some audio reproduction
-
-The end goal is a 3D media room with mobile seating and screen and some basic media selection and playback control
-Should handle both video audio and images, from local sources and maybe something more
 
 ## Graphics
 rendering tetures on 2d objects needs shaders, which is shit
@@ -133,8 +128,10 @@ better
 
 printing single color blobs didn0t work, maybe writing them to disk will be better
 this can be done with
+
     lovr.filesystem.write("whatever.txt", blob)
 and then 
+
     adb pull /sdcard/Android/data/org.lovr.hotswap/files/whatever.txt
 
 local points = lovr.headset.getBoundsGeometry() returns an ungodly number of points
@@ -276,13 +273,23 @@ https://www.youtube.com/watch?v=SdNb7-I1TtA
 These include 3D fractals and some other cool stuff
 
 The core point is ray marching algorithms that take the geometry and march the rays inside it, whcih is done in the fragment shader 
-some codes for simole geometres can be found at https://www.shadertoy.com/view/wdf3zl
 
+some codes for simole geometres can be found at https://www.shadertoy.com/view/wdf3zl
+http://blog.hvidtfeldts.net/index.php/2011/08/distance-estimated-3d-fractals-iii-folding-space/
+https://iquilezles.org/articles/
 
 ## Rotations
 planes have defalt normal towards 0, 0, 1
 idea 1: get direction between head and left hand and sue that for the center, easy to aim and to adjust, always normal to vision field
 how the fuck do unpack work
+
+## To Do
+ - study GLSL define functions
+ - can we make a LIDAR example
+ - ping pong ball and racket
+ - do some basic ffi for high performance code (?)
+ - get someone to compile the requests library for you 
+
 
 ## Comicbook
 
@@ -315,7 +322,6 @@ grab works, need to center image in plane
 
 
 ## LuaJIT-requests
-
 
 https://github.com/LPGhatguy/luajit-request
 include needed
@@ -352,8 +358,23 @@ pprint(posts["posts"][0])
 
 
 
-## Simple ideas
-simple graph visual in 3d
-ping pong ball and racket
 
+## Theater
+ 
+### 2D Images
+planes are much comfier than boxes and don't need cubemaps
+Canvases can render 3d things in a different place, project them onside the canvas and display as a  texture. Neat
+using graphics.fill we can also just push a Image inside. this image is streched
+we use a blank Image, paste our content, fill the canvas woith it and use that maybe
 
+I want to then test some basics in moving the box around, maybe the pointer library could be useful
+netflix screeen is pretty easy and good, but i wnat to project this on the vo correctly i think
+
+perhaps more interesting content would help us
+### moar
+next is loading images from interesting sources
+
+then we could test some audio reproduction
+
+The end goal is a 3D media room with mobile seating and screen and some basic media selection and playback control
+Should handle both video audio and images, from local sources and maybe something more
