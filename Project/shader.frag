@@ -9,32 +9,61 @@ uniform sampler2D palette;
 #define MAX_STEPS 50
 #define MAX_DIST 10.
 #define SURF_DIST .003 // Could a low precisoin in the posotion of the ray be the cause of the jagged lines?
-#define SPONGE_ITER 5
+#define ITER 5
 
-float sdBox( vec3 p, vec3 b )
+float DEBox( vec3 p, vec3 pBox, vec3 sizeBox ){
+  return length(max(abs(p - pBox) - sizeBox, 0.));
+}
+
+float DESphere(vec3 p, vec3 pSphere, float rSphere){
+    return length(p - pSphere.xyz) - rSphere;
+}
+
+float DEInefficentMergerSponge(vec3 p){ // inefficent but valid merger sponge
+    float s = 1.;
+    float d = 0.;
+    for(int m=0; m<ITER; m++ ){
+        vec3 a = mod( p*s, 2.)-1.;
+        s *= 3.0;
+        vec3 r = abs(1.0 - 3.0*abs(a));
+        float da = max(r.x,r.y);
+        float db = max(r.y,r.z);
+        float dc = max(r.z,r.x);
+        float c = (min(da,min(db,dc))-1.0)/s;
+        d = max(d,c);
+    }
+    return d;
+}
+
+float DEInefficentPenroseTetrahedron(vec3 z)
 {
-  vec3 q = abs(p) - b;
-  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+    float r;
+    vec3 Offset = vec3(0.5);
+    float Scale = 2.;
+    int n = 0;
+    while (n < ITER) {
+       if(z.x+z.y<0.) z.xy = -z.yx; // fold 1
+       if(z.x+z.z<0.) z.xz = -z.zx; // fold 2
+       if(z.y+z.z<0.) z.zy = -z.yz; // fold 3	
+       z = z*Scale - Offset*(Scale-1.0);
+       n++;
+    }
+    return (length(z) ) * pow(Scale, -float(n));
 }
 
 float GetDist(vec3 p) {
-   float d = sdBox(p,vec3(1.0));
-
-   float s = 1.;
-   for( int m=0; m<SPONGE_ITER; m++ )   {
-      vec3 a = mod( p*s, 2.)-1.;
-      s *= 3.0;
-      vec3 r = abs(1.0 - 3.0*abs(a));
-
-      float da = max(r.x,r.y);
-      float db = max(r.y,r.z);
-      float dc = max(r.z,r.x);
-      float c = (min(da,min(db,dc))-1.0)/s;
-
-      d = max(d,c);
-   }
-
-   return d;
+    float modSpace = 1.; // size of the mod effect, meters
+    // the mod effect starts from (0,0,0) and expands only in positive diretions
+    float modOffset = modSpace/2.; //offset of the mod effect from 0,0,0.
+    // the sphere being rendered has position (0,0,0), so an offset is necessary as negative values are removed by the mod
+    p.xyz = mod((p.xyz),modSpace)-vec3(modOffset); // instance on xy-plane
+    // the modulo space creates  anauseating movement effect AND inverts flight controls. WHY
+    vec3 zero_pos = vec3(0., 0., 0.);
+    vec3 sizeBox = vec3(.5);  
+    float box = DEBox(p, zero_pos, sizeBox);
+    float sphere = DESphere(p, zero_pos, .7);
+    //float penrose = DEPenroseTetrahedron(p);
+    return max(box, -sphere);
 }
 
 vec2 RayMarch(vec3 ro, vec3 rd) {
@@ -42,7 +71,7 @@ vec2 RayMarch(vec3 ro, vec3 rd) {
     int i=0; //iternations
     for(i=0; i<MAX_STEPS; i++) {
         vec3 p = ro + rd*dO;    //get new DE center
-        float dS = GetDist(p/scale)*scale;
+        float dS = GetDist(p);
         //float random = 1. - ((fract(sin(dot(rd.xy,vec2(12.9898,78.233)))*43758.5453123)+1.)/10.); // random 1. - [.0, .2]
         //ds *= random; // add random component
         dO += dS; // update distance
@@ -78,7 +107,8 @@ float GetLight(vec3 p) {
 }
 
 vec4 color(vec4 gcolor, sampler2D image, vec2 uv) {
-    vec3 ro = pos + viewOffset;
+    vec3 ro = pos;
+    ro += viewOffset; // add flight controls
     vec3 rd = normalize(dir);
 
     vec2 tmp = RayMarch(ro, rd);
@@ -89,13 +119,11 @@ vec4 color(vec4 gcolor, sampler2D image, vec2 uv) {
     //float dif = GetLight(p);
     //vec3 col = vec3(dif);
     float col = 1.0;
-    col -= 1.3 * (float(steps)/float(MAX_STEPS));
+    col -= (float(steps)/float(MAX_STEPS));
     col -= float(dist)/float(MAX_DIST);
-    if (dist > MAX_DIST-2.){
-        return vec4(vec3(.0), 1.);
-    }
-    ivec2 texture_size = textureSize(palette, 0);
-    vec2 coords = vec2(0, 3.*dist/float(texture_size.y));
-    vec3 color = texture(palette, coords).xyz;
-    return vec4(color,1.0);
+
+    //ivec2 texture_size = textureSize(palette, 0);
+    //vec2 coords = vec2(0, 3.*dist/float(texture_size.y));
+    //vec3 color = texture(palette, coords).xyz;
+    return vec4(vec3(col), 1.0);
 }

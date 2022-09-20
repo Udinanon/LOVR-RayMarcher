@@ -41,10 +41,7 @@ end
 function lovr.update(dt)
   shader:send('viewPos', {lovr.headset.getPosition("head")})
   shader:send("time", lovr.timer.getTime())
-  local eye_pos = vec3(lovr.headset.getViewPose(1));
-  shader:send("eye0", { eye_pos })
-  eye_pos = vec3(lovr.headset.getViewPose(2));
-  shader:send("eye1", { eye_pos })
+
 
   -- update physics, like magic
   world:update(dt)
@@ -106,26 +103,15 @@ function lovr.draw()
 
 
     elseif State["B"] then
-      lovr.graphics.setColor(1, 1, 1)
-      lovr.graphics.sphere(position, .01)
-
       if hand == "hand/right" then
         lovr.graphics.setColor(1, 1, 1)
         lovr.graphics.setShader(shader)
-        --shader:send("lightPos", { 0.0, 1.0, 0.0 })
-        --lovr.graphics.cube("fill", position, 0.2, hand_quat)
-        print(lovr.headset.getViewPose(1))
-        print(vec3(lovr.headset.getViewPose(1)))
-        local eye_pos = vec3(lovr.headset.getViewPose(1));
-
-        shader:send("eye0", { eye_pos })
-        eye_pos = vec3(lovr.headset.getViewPose(2));
-        shader:send("eye1", { eye_pos})
-        print(lovr.headset.getViewCount())
         lovr.graphics.clear()
         lovr.graphics.fill()
         lovr.graphics.setShader()
       end
+      lovr.graphics.setColor(1, 0, 1)
+      lovr.graphics.sphere(position, .01)
     end
   end
 
