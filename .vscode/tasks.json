@@ -110,7 +110,7 @@
                     "hide": true
                 }
             }
-            },
+        },
         {
             "label": "Local Send LOVR",
             "type": "shell",
@@ -118,11 +118,10 @@
             "problemMatcher": [],
         },
         {
-
-            "label": "ADB debug LOVR network",
+            "label": "ADB Send Project LOVR Requests",
             "type": "shell",
-            "command": "adb push --sync ${workspaceFolder}/Project/. /sdcard/Android/data/org.lovr.app/files; adb shell am force-stop org.lovr.app; adb shell am start org.lovr.app/org.lovr.app.Activity; adb logcat -s LOVR"
-        }
-
+            "command": "adb push --sync ${workspaceFolder}/Project/. /sdcard/Android/data/org.lovr.app/files;adb shell am force-stop org.lovr.app; adb shell am start org.lovr.app/org.lovr.app.Activity; adb logcat -s LOVR;",
+            "problemMatcher": [],
+        },
     ]
 }
