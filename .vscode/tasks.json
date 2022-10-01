@@ -100,30 +100,28 @@
                 }
             }
         },
-            {
-                "label": "Record screen for 5s",
-                "type": "shell",
-                "command": "sleep 3; adb exec-out screenrecord --verbose --bit-rate=25m --size 1920x1080 --time-limit=5 /sdcard/video.mp4; wait; adb pull /sdcard/video.mp4 ${workspaceFolder}/Screens/video.mp4; wait; adb shell rm -f /sdcard/video.mp4",
-                "problemMatcher": [],
-                "options": {
-                    "statusbar": {
-                        "hide": true
-                    }
+        {
+            "label": "Record screen for 5s",
+            "type": "shell",
+            "command": "sleep 3; adb exec-out screenrecord --verbose --bit-rate=25m --size 1920x1080 --time-limit=5 /sdcard/video.mp4; wait; adb pull /sdcard/video.mp4 ${workspaceFolder}/Screens/video.mp4; wait; adb shell rm -f /sdcard/video.mp4",
+            "problemMatcher": [],
+            "options": {
+                "statusbar": {
+                    "hide": true
                 }
-            },
+            }
+        },
         {
             "label": "Local Send LOVR",
             "type": "shell",
             "command": "${workspaceFolder}/Engine/lovr-x86_64.AppImage ${workspaceFolder}/Project/",
             "problemMatcher": [],
-        }
-
+        },
+        {
+            "label": "ADB Send Project LOVR Requests",
+            "type": "shell",
+            "command": "adb push --sync ${workspaceFolder}/Project/. /sdcard/Android/data/org.lovr.app/files;adb shell am force-stop org.lovr.app; adb shell am start org.lovr.app/org.lovr.app.Activity; adb logcat -s LOVR;",
+            "problemMatcher": [],
+        },
     ]
 }
-
-ffmpeg -i Screens/video.mp4 -filter_complex "[0:v] crop=960:1080:0:0,scale=480:-1:flags=lanczos,split [a][b];[a] palettegen [p];[b][p] paletteuse" Screens/gif_2.gif
-
-ffmpeg -i Screens/video.mp4 -c:v libvpx-vp9 -crf 30 -b:v 0 Screens/gif_3.webm
-
-ffmpeg -i Screens/video.mp4 -vf '[0:v] crop=960: 1080: 0: 0,scale=480: -1:flags=lanczos' -c:v libvpx-vp9 -b:v 0 -crf 34 -pass 1 -an -f null /dev/null && \
-ffmpeg -i Screens/video.mp4 -vf '[0:v] crop=960: 1080: 0: 0,scale=480: -1:flags=lanczos' -c:v libvpx-vp9 -b:v 0 -crf 34 -pass 2 Screens/out.webm
