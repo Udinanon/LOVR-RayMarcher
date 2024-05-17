@@ -1,10 +1,12 @@
 in vec3 pos;
 in vec3 dir;
 
-uniform float time;
-uniform float scale;
-uniform vec3 viewOffset;
-uniform sampler2D palette;
+Constants {
+    float time;
+    float scale;
+    vec3 viewOffset;
+//uniform sampler2D palette;
+};
 
 #define MAX_STEPS 50
 #define MAX_DIST 10.
@@ -105,8 +107,7 @@ float GetLight(vec3 p) {
 
     return dif;
 }
-
-vec4 color(vec4 gcolor, sampler2D image, vec2 uv) {
+vec4 lovrmain() {
     vec3 ro = pos;
     ro += viewOffset; // add flight controls
     vec3 rd = normalize(dir);
@@ -125,5 +126,6 @@ vec4 color(vec4 gcolor, sampler2D image, vec2 uv) {
     //ivec2 texture_size = textureSize(palette, 0);
     //vec2 coords = vec2(0, 3.*dist/float(texture_size.y));
     //vec3 color = texture(palette, coords).xyz;
+    //return vec4(1., 0., 1., 1.0);
     return vec4(vec3(col), 1.0);
 }

@@ -1,9 +1,9 @@
 precision highp float;
 out vec3 pos;
 out vec3 dir;
-vec4 position(mat4 projection, mat4 transform, vec4 vertex) {
-  vec4 ray = vec4(lovrTexCoord * 2. - 1., -1., 1.);
-  pos = -lovrView[3].xyz * mat3(lovrView);
-  dir = transpose(mat3(lovrView)) * (inverse(lovrProjection) * ray).xyz;
-  return vertex;
+vec4 lovrmain() {
+  vec4 ray = vec4(UV * 2. - 1., -1., 1.);
+  pos = -View[3].xyz * mat3(View);
+  dir = transpose(mat3(View)) * (inverse(Projection) * ray).xyz;
+  return DefaultPosition;
 }
