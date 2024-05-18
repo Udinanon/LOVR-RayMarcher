@@ -1,7 +1,3 @@
----@diagnostic disable: deprecated
-
-
-
 -- run on boot of the program, where all the setup happes
 function lovr.load()
 
@@ -34,9 +30,9 @@ function lovr.draw(pass)
   --lovr.graphics.clear()
   --pass:sphere()
   --  pass:reset()
-  --pass:sphere()
   --lovr.graphics.setShader()
   
+  pass:sphere()
   pass:setColor(1, 1, 1)
   pass:setShader(march_shader)
   pass:send('viewOffset', { flight.viewOffset:unpack() })
