@@ -1,6 +1,6 @@
 -- run on boot of the program, where all the setup happes
 function lovr.load()
-
+  lovr.graphics.setTimingEnabled(true)
   march_shader = lovr.graphics.newShader(lovr.filesystem.read("shader.vert"),lovr.filesystem.read("shader.frag"))
   flight = {
     viewOffset = lovr.math.newVec3(0, 0, 0),
@@ -32,11 +32,18 @@ function lovr.draw(pass)
   --  pass:reset()
   --lovr.graphics.setShader()
   
-  pass:sphere()
-  pass:setColor(1, 1, 1)
+  pass:cube()
   pass:setShader(march_shader)
   pass:send('viewOffset', { flight.viewOffset:unpack() })
   pass:send("scale", scale)
-  pass:send("time", 0.0)
-  pass:plane(vec3(1, 0, 0))
+  pass:send("time", lovr.timer.getTime())
+  pass:setColor(1, 1, 1, 0)
+  pass:plane()
+
+  stats = pass:getStats()
+  print('GPU Stats:')
+  for k, v in pairs(stats) do
+    print(k, v)
+  end
+  print(('Rendering in %f milliseconds'):format(stats.gpuTime * 1e3))
 end
