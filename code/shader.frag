@@ -64,14 +64,14 @@ float GetDist(vec3 p) {
     // the mod effect starts from (0,0,0) and expands only in positive diretions
     float modOffset = modSpace/2.; //offset of the mod effect from 0,0,0.
     // the sphere being rendered has position (0,0,0), so an offset is necessary as negative values are removed by the mod
-    p.xz = mod((p.xz),modSpace)-vec2(modOffset); // instance on xy-plane
+    //p.xz = mod((p.xz),modSpace)-vec2(modOffset); // instance on xy-plane
     // the modulo space creates  anauseating movement effect AND inverts flight controls. WHY
     vec3 zero_pos = vec3(0., 0., 0.);
     vec3 sizeBox = vec3(.5);  
     float box = DEBox(p, zero_pos, sizeBox);
     float sphere = DESphere(p, zero_pos, .7);
-    //float penrose = DEPenroseTetrahedron(p);
-    return sphere;
+    float penrose = DEInefficentMergerSponge(p);
+    return penrose;
     //return max(box, -sphere);
 }
 
@@ -127,6 +127,15 @@ float GetLight(vec3 p) {
     return dif;
 }
 
+vec3 palette( in float t)
+{
+    vec3 a = vec3(0.5, 0.5, 0.5);
+    vec3 b = vec3(0.5, 0.5, 0.5);	
+    vec3 c = vec3(1.0, 1.0, 0.5);
+    vec3 d = vec3(0.80, 0.90, 0.30);
+    return a + b*cos( 6.28318*(c*t+d) );
+}
+
 // Main function 
 vec4 lovrmain() {
     vec3 position = pos + viewOffset; // add flight controls
@@ -137,15 +146,15 @@ vec4 lovrmain() {
     float dist = abs(length(raymarch_result.y)); 
     vec3 p = position + direction * dist;
 
-    float dif = GetLight(p);
-    vec3 col = vec3(dif);
-    //col = vec3(1.);
-    //float col = 1.0;
-    col.b -= (float(steps)/float(MAX_STEPS));
-    col.r -= float(dist)/float(MAX_DIST);
+    //vec3 col = vec3(dif);
+    float col = 1.0;
+    col -= (float(steps)/float(MAX_STEPS));
+    col -= float(dist)/float(MAX_DIST);
+    // cosine based palette, 4 vec3 params
+
     //ivec2 texture_size = textureSize(palette, 0);
     //vec2 coords = vec2(0, 3.*dist/float(texture_size.y));
     //vec3 color = texture(palette, coords).xyz;
     //return vec4(1., 0., 1., 1.0);
-    return vec4(vec3(col), 1.0);
+    return vec4(vec3(palette(col)), 1.0);
 }
