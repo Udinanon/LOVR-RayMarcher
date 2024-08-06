@@ -11,6 +11,7 @@ Constants {
 //uniform sampler2D palette;
 };
 
+
 #define MAX_STEPS 50
 #define MAX_DIST 20.
 
@@ -23,7 +24,7 @@ float DEBox( vec3 p, vec3 pBox, vec3 sizeBox ){
   return length(max(abs(p - pBox) - sizeBox, 0.));
 }
 
-//return distacne from a sphere at pShpere, radius rSphere, position p
+//return distacnce from a sphere at pSphere, radius rSphere, position p
 float DESphere(vec3 p, vec3 pSphere, float rSphere){
     return length(p - pSphere.xyz) - rSphere;
 }
@@ -59,20 +60,28 @@ float DEInefficentPenroseTetrahedron(vec3 z){
     return (length(z) ) * pow(Scale, -float(n));
 }
 
+// Return a psuedo random value in the range [0, 1), seeded via coord
+float rand(vec2 coord)
+{
+  return fract(sin(dot(coord.xy, vec2(12.9898,78.233))) * 43758.5453);
+}
+
 float GetDist(vec3 p) {
     float modSpace = 3.; // size of the mod effect, meters
     // the mod effect starts from (0,0,0) and expands only in positive diretions
     float modOffset = modSpace/2.; //offset of the mod effect from 0,0,0.
     // the sphere being rendered has position (0,0,0), so an offset is necessary as negative values are removed by the mod
-    //p.xz = mod((p.xz),modSpace)-vec2(modOffset); // instance on xy-plane
+    p.xyz = mod((p.xyz),modSpace)-vec3(modOffset); // instance on xy-plane
     // the modulo space creates  anauseating movement effect AND inverts flight controls. WHY
     vec3 zero_pos = vec3(0., 0., 0.);
-    vec3 sizeBox = vec3(.5);  
-    float box = DEBox(p, zero_pos, sizeBox);
-    float sphere = DESphere(p, zero_pos, .7);
-    float penrose = DEInefficentMergerSponge(p);
-    return penrose;
-    //return max(box, -sphere);
+    //vec3 sizeBox = vec3(.5);  
+    //float box = DEBox(p, zero_pos, sizeBox);
+    //zero_pos.x += .5 * sin(0.5*time);
+    //zero_pos.y -= .6 * sin(0.4*time);
+    float sphere = DESphere(p, zero_pos , .30);
+    //float penrose = DEInefficentMergerSponge(p);
+    //return penrose;
+    return sphere;
 }
 
 // Main RayMarch loop
@@ -109,18 +118,18 @@ vec3 GetNormal(vec3 p) {
     return normalize(n);
 }
 
-// used to cpute lighting effects
+// used to compute lighting effects
 float GetLight(vec3 p) {
     
     vec3 lightPos = vec3(0, 0, 0);
     // rotate light
     lightPos.xz += vec2(sin(time), cos(time))*2.;
     // get positions of light and surface normal
-    vec3 l = normalize(lightPos-p);
-    vec3 n = GetNormal(p);
+    vec3 light_vector = normalize(lightPos-p);
+    vec3 surface_normal = GetNormal(p);
 
     // Basic phong model
-    float dif = clamp(dot(n, l), 0., 1.);
+    float dif = clamp(dot(surface_normal, light_vector), 0., 1.);
     //float d = RayMarch(p+n*SURF_DIST*2., l);
     //if(d<length(lightPos-p)) dif *= .1;
 
@@ -147,14 +156,20 @@ vec4 lovrmain() {
     vec3 p = position + direction * dist;
 
     //vec3 col = vec3(dif);
-    float col = 1.0;
-    col -= (float(steps)/float(MAX_STEPS));
-    col -= float(dist)/float(MAX_DIST);
+    //vec2 col = vec2(1.0);
+    float dif = GetLight(p);
+    vec3 ambient_light = vec3(0.09, 0.06, 0.15);
+    vec3 direct_light_color = vec3(0.8, 0.95, 0.98);
+    vec3 col = dif * direct_light_color + ambient_light;
+    col -= 0.85*float(dist)/float(MAX_DIST) + 0.06*(float(steps)/float(MAX_STEPS));
+    //col.g += (float(steps)/float(MAX_STEPS));
     // cosine based palette, 4 vec3 params
 
     //ivec2 texture_size = textureSize(palette, 0);
     //vec2 coords = vec2(0, 3.*dist/float(texture_size.y));
     //vec3 color = texture(palette, coords).xyz;
     //return vec4(1., 0., 1., 1.0);
-    return vec4(vec3(palette(col)), 1.0);
+    //return vec4(UV, 0, 1);
+    return vec4(col, 1.0);
+    //return vec4(vec3(palette(col)), 1.0);
 }
